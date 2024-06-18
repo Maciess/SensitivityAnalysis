@@ -1,5 +1,7 @@
 import numpy as np
 import minterpy as mp
+import numpy.linalg as la
+import matplotlib.pyplot as plt
 
 
 domain = np.array([

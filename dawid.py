@@ -1,6 +1,16 @@
 import numpy as np
 
 
+domain = np.array([
+    [50, 150],
+    [25, 70],
+    [0.5, 3],
+    [1.2, 2.5],
+    [0.25, 1.2],
+    [50, 300],
+])
+
+
 def otl(Rb1, Rb2, Rf, Rc1, Rc2, beta):
 
     Vb1 = 12 * Rb2 / (Rb1 + Rb2)
@@ -18,14 +28,8 @@ def otl(Rb1, Rb2, Rf, Rc1, Rc2, beta):
 
 
 def otl_normalized(xx):
-    return otl(
-        translate_interval(50, 150, xx[:,0]),
-        translate_interval(25, 70, xx[:,1]),
-        translate_interval(0.5, 3, xx[:,2]),
-        translate_interval(1.2, 2.5, xx[:,3]),
-        translate_interval(0.25, 1.2, xx[:,4]),
-        translate_interval(50, 300, xx[:,5]),
-    )
+    params = [translate_interval(domain[i][0], domain[i][1], xx[:,i]) for i in range(domain.shape[0])]
+    return otl(*params)
     
     
 def translate_interval(a, b, xx):

@@ -77,15 +77,51 @@ def compute_dgsm(nwt_poly, variance):
     return dgsm_vals
     
     
-def visualize_dgsm(dgsm_values):
-    plt.bar(["R_b1", "R_b2", "R_f", "R_c1", "R_c2", "beta"], dgsm_values)
-    plt.ylabel("DGSM")
+def visualize(values, ylab):
+    plt.bar(["R_b1", "R_b2", "R_f", "R_c1", "R_c2", "beta"], values)
+    plt.ylabel(ylab)
     plt.xlabel("OTL parameters")
     plt.yscale("log")
     plt.show()
+
     
 def run_dgsm():
     variance_value = 0.6095304683143756
     nwt_poly = get_nwt_interpolant(otl_normalized, spatial_dimension=domain.shape[0], poly_degree=8, lp_degree=1)
     D = compute_dgsm(nwt_poly, variance_value)
-    visualize_dgsm(D)
+    visualize(D, "DGSM")
+    
+
+def get_asbm_c_matrix(nwt_poly, spatial_dimension=6):
+    gradient = [nwt_poly.partial_diff(i) for i in range(spatial_dimension)]
+    C = np.zeros((spatial_dimension, spatial_dimension), dtype=np.float64)
+    for i in range(spatial_dimension):
+        for j in range(i, spatial_dimension):
+            C[i,j] = (gradient[i] * gradient[j]).integrate_over() * np.power(1/2, spatial_dimension)
+            print(f"{i}, {j}")
+    return C
+
+
+def get_asbm_eigendecomposition(C):
+    v, w = la.eigh(C, UPLO="U")
+    return v, w
+
+
+def asbm(v, w, i, k):
+    d = v.shape[0]
+    return np.sum([
+        v[j] * np.square(w[j, i])
+        for j in range(d - k, d)
+    ])
+
+
+def run_asbm():
+    nwt_poly = get_nwt_interpolant(otl_normalized, domain.shape[0], 4, 2.0)
+    C = get_asbm_c_matrix(nwt_poly, domain.shape[0])
+    v, w = get_asbm_eigendecomposition(C)
+
+    asbm_values = np.zeros(spatial_dimension, dtype=np.float64)
+    for i in range(spatial_dimension):
+        asbm_values[i] = asbm(v, w, i, 2)
+    
+    visualize(asbm_values, "Active-subspace-based measures")

@@ -15,6 +15,7 @@ domain = np.array([
 ])
 
 
+
 def otl(Rb1, Rb2, Rf, Rc1, Rc2, beta):
 
     Vb1 = 12 * Rb2 / (Rb1 + Rb2)
@@ -116,12 +117,13 @@ def asbm(v, w, i, k):
 
 
 def run_asbm():
-    nwt_poly = get_nwt_interpolant(otl_normalized, domain.shape[0], 4, 2.0)
-    C = get_asbm_c_matrix(nwt_poly, domain.shape[0])
+    spatial_domain = domain.shape[0]
+    nwt_poly = get_nwt_interpolant(otl_normalized, spatial_domain, 4, 2.0)
+    C = get_asbm_c_matrix(nwt_poly, spatial_domain)
     v, w = get_asbm_eigendecomposition(C)
 
-    asbm_values = np.zeros(spatial_dimension, dtype=np.float64)
-    for i in range(spatial_dimension):
+    asbm_values = np.zeros(spatial_domain, dtype=np.float64)
+    for i in range(spatial_domain):
         asbm_values[i] = asbm(v, w, i, 1)
     
     visualize(asbm_values, "Active-subspace-based measures")

@@ -2,6 +2,7 @@ import numpy as np
 import minterpy as mp
 import numpy.linalg as la
 import matplotlib.pyplot as plt
+import numpy.random as npr
 
 
 domain = np.array([
@@ -81,12 +82,11 @@ def visualize(values, ylab):
     plt.bar(["R_b1", "R_b2", "R_f", "R_c1", "R_c2", "beta"], values)
     plt.ylabel(ylab)
     plt.xlabel("OTL parameters")
-    plt.yscale("log")
     plt.show()
 
     
 def run_dgsm():
-    variance_value = 0.6095304683143756
+    variance_value = 1.2
     nwt_poly = get_nwt_interpolant(otl_normalized, spatial_dimension=domain.shape[0], poly_degree=8, lp_degree=1)
     D = compute_dgsm(nwt_poly, variance_value)
     visualize(D, "DGSM")
@@ -110,7 +110,7 @@ def get_asbm_eigendecomposition(C):
 def asbm(v, w, i, k):
     d = v.shape[0]
     return np.sum([
-        v[j] * np.square(w[j, i])
+        v[j] * np.square(w[i, j])
         for j in range(d - k, d)
     ])
 
@@ -122,6 +122,16 @@ def run_asbm():
 
     asbm_values = np.zeros(spatial_dimension, dtype=np.float64)
     for i in range(spatial_dimension):
-        asbm_values[i] = asbm(v, w, i, 2)
+        asbm_values[i] = asbm(v, w, i, 1)
     
     visualize(asbm_values, "Active-subspace-based measures")
+    asbm_scatter_plot(w)
+
+
+def asbm_scatter_plot(w):
+    sample = npr.uniform(-1, 1, (1000, 6))
+    w1 = w[:,5]
+    proj = np.apply_along_axis(lambda x, ww=w1: np.dot(x, ww), axis=1, arr=sample)
+
+    plt.scatter(proj, otl_normalized(sample))
+    plt.show()

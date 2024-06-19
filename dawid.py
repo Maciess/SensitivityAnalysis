@@ -63,11 +63,9 @@ def get_nwt_interpolant(f, spatial_dimension=6, poly_degree=8, lp_degree=1.0):
     
 def dgsm(nwt_poly, i, variance, spatial_dimension=6):
     nwt_diff = nwt_poly.partial_diff(i)
-    interval_length = domain[i][1] - domain[i][0]
-    diff_const = np.square(interval_length / 2)
-    vi = (nwt_diff * nwt_diff).integrate_over() * diff_const * np.power(1/2, spatial_dimension)
-    dgsm_const = np.square(interval_length / np.pi) / variance
-    return dgsm_const * vi
+    const_mult = np.square(2 / np.pi) / variance
+    vi = (nwt_diff * nwt_diff).integrate_over() * const_mult * np.power(1/2, spatial_dimension)
+    return vi
 
 
 def compute_dgsm(nwt_poly, variance):
